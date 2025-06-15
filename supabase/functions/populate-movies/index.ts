@@ -68,12 +68,18 @@ serve(async (req) => {
 
     const tmdbApiKey = '8265bd1679663a7ea12ac168da84d2e8';
     
-    // Fetch trending movies and TV shows
+    // Fetch from multiple TMDB endpoints for comprehensive content
     const endpoints = [
       `https://api.themoviedb.org/3/trending/movie/week?api_key=${tmdbApiKey}`,
       `https://api.themoviedb.org/3/trending/tv/week?api_key=${tmdbApiKey}`,
       `https://api.themoviedb.org/3/movie/popular?api_key=${tmdbApiKey}`,
-      `https://api.themoviedb.org/3/tv/popular?api_key=${tmdbApiKey}`
+      `https://api.themoviedb.org/3/tv/popular?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/movie/top_rated?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/tv/top_rated?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/movie/upcoming?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/movie/now_playing?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/tv/airing_today?api_key=${tmdbApiKey}`,
+      `https://api.themoviedb.org/3/tv/on_the_air?api_key=${tmdbApiKey}`
     ];
 
     let totalAdded = 0;
@@ -84,7 +90,7 @@ serve(async (req) => {
       
       const isTV = endpoint.includes('/tv/');
       
-      for (const item of data.results?.slice(0, 20) || []) {
+      for (const item of data.results?.slice(0, 50) || []) {
         // Check if already exists
         const { data: existing } = await supabase
           .from('movies')
