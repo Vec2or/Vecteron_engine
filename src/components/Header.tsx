@@ -1,8 +1,23 @@
 import { Search, Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useMovies } from "@/hooks/useMovies";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export const Header = () => {
+  const { searchTerm, setSearchTerm } = useMovies();
+  const navigate = useNavigate();
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (localSearch.trim()) {
+      setSearchTerm(localSearch.trim());
+      navigate('/search');
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -22,13 +37,15 @@ export const Header = () => {
         </div>
         
         <div className="flex items-center space-x-4">
-          <div className="relative hidden md:block">
+          <form onSubmit={handleSearch} className="relative hidden md:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input 
               placeholder="Search movies, shows..." 
               className="pl-10 w-64 bg-secondary/50 border-border"
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
             />
-          </div>
+          </form>
           <Button variant="ghost" size="icon">
             <Bell className="w-5 h-5" />
           </Button>

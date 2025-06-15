@@ -1,8 +1,10 @@
 import { Play, Plus, ThumbsUp, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 
 interface MovieCardProps {
+  id: string;
   title: string;
   year: string;
   rating: number;
@@ -10,9 +12,10 @@ interface MovieCardProps {
   poster: string;
 }
 
-export const MovieCard = ({ title, year, rating, genre, poster }: MovieCardProps) => {
+export const MovieCard = ({ id, title, year, rating, genre, poster }: MovieCardProps) => {
   return (
-    <Card className="group relative overflow-hidden bg-card border-border hover:scale-105 transition-all duration-300 cursor-pointer">
+    <Link to={`/movie/${id}`}>
+      <Card className="group relative overflow-hidden bg-card border-border hover:scale-105 transition-all duration-300 cursor-pointer">
       <div className="aspect-[2/3] relative">
         <img 
           src={poster} 
@@ -49,5 +52,6 @@ export const MovieCard = ({ title, year, rating, genre, poster }: MovieCardProps
         </div>
       </div>
     </Card>
+    </Link>
   );
 };
