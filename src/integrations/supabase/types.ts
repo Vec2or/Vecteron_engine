@@ -128,6 +128,68 @@ export type Database = {
           },
         ]
       }
+      search_history: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          results: Json | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          results?: Json | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          results?: Json | null
+        }
+        Relationships: []
+      }
+      streaming_sources: {
+        Row: {
+          created_at: string
+          id: string
+          language: string | null
+          movie_id: string
+          provider: string | null
+          quality: string | null
+          source_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          movie_id: string
+          provider?: string | null
+          quality?: string | null
+          source_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string | null
+          movie_id?: string
+          provider?: string | null
+          quality?: string | null
+          source_url?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "streaming_sources_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watchlist: {
         Row: {
           created_at: string

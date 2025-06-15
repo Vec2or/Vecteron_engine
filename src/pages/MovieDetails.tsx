@@ -1,15 +1,97 @@
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Play, Plus, Share, Star } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Play, Plus, Share, Star, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMovies } from '@/hooks/useMovies';
-import { MovieRow } from '@/components/MovieRow';
+import { useMoviesDB } from '@/hooks/useMoviesDB';
+import { VideoPlayer } from '@/components/VideoPlayer';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const MovieDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const { getMovieById, movies } = useMovies();
-  
-  const movie = id ? getMovieById(id) : null;
+  const { getMovieById, getMovieWithSources, movies, addToWatchlist } = useMoviesDB();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [movie, setMovie] = useState<any>(null);
+  const [streamingSources, setStreamingSources] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<any>(null);
+
+  useEffect(() => {
+    if (id) {
+      loadMovieData();
+    }
+  }, [id]);
+
+  const loadMovieData = async () => {
+    if (!id) return;
+    
+    setLoading(true);
+    try {
+      const result = await getMovieWithSources(id);
+      if (result) {
+        setMovie(result.movie);
+        setStreamingSources(result.sources);
+      } else {
+        // Fallback to basic movie data
+        const movieData = await getMovieById(id);
+        setMovie(movieData);
+      }
+    } catch (error) {
+      console.error('Error loading movie:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load movie details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePlayMovie = () => {
+    const bestSource = streamingSources.find(s => s.quality === '1080p') || streamingSources[0];
+    if (bestSource) {
+      setSelectedSource(bestSource);
+      setShowPlayer(true);
+    } else {
+      toast({
+        title: "No Sources Available",
+        description: "No streaming sources found for this movie",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddToWatchlist = async () => {
+    if (!movie) return;
+    
+    try {
+      await addToWatchlist(movie.id);
+      toast({
+        title: "Added to Watchlist",
+        description: `${movie.title} has been added to your watchlist`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add to watchlist. Please sign in.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Loading movie details...</p>
+        </div>
+      </div>
+    );
+  }
   
   if (!movie) {
     return (
@@ -83,19 +165,45 @@ const MovieDetails = () => {
             </div>
             
             <div className="flex items-center space-x-4 mb-6">
-              <Button size="lg" className="bg-foreground text-background hover:bg-foreground/90">
+              <Button 
+                size="lg" 
+                className="bg-foreground text-background hover:bg-foreground/90"
+                onClick={handlePlayMovie}
+                disabled={streamingSources.length === 0}
+              >
                 <Play className="w-5 h-5 mr-2" />
-                Play Now
+                {streamingSources.length > 0 ? 'Play Now' : 'No Sources Available'}
               </Button>
-              <Button variant="secondary" size="lg">
+              <Button variant="secondary" size="lg" onClick={handleAddToWatchlist}>
                 <Plus className="w-5 h-5 mr-2" />
                 My List
               </Button>
-              <Button variant="ghost" size="lg">
-                <Share className="w-5 h-5 mr-2" />
-                Share
-              </Button>
+              {streamingSources.length > 0 && (
+                <Button variant="ghost" size="lg">
+                  <Settings className="w-5 h-5 mr-2" />
+                  {streamingSources.length} Sources
+                </Button>
+              )}
             </div>
+            
+            {/* Streaming Sources */}
+            {streamingSources.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-sm font-semibold text-foreground mb-2">Available Sources:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {streamingSources.slice(0, 5).map((source, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">
+                      {source.provider} ({source.quality})
+                    </Badge>
+                  ))}
+                  {streamingSources.length > 5 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{streamingSources.length - 5} more
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
               <div>
@@ -115,11 +223,14 @@ const MovieDetails = () => {
         </div>
       </div>
 
-      {/* Related Movies */}
-      {relatedMovies.length > 0 && (
-        <div className="py-8">
-          <MovieRow title="More Like This" movies={relatedMovies} />
-        </div>
+      {/* Video Player */}
+      {showPlayer && selectedSource && (
+        <VideoPlayer
+          src={selectedSource.source_url}
+          poster={movie.poster}
+          title={movie.title}
+          onClose={() => setShowPlayer(false)}
+        />
       )}
     </div>
   );

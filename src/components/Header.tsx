@@ -2,21 +2,51 @@ import { Search, Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useMovies } from "@/hooks/useMovies";
+import { useMoviesDB } from "@/hooks/useMoviesDB";
 import { useSupabase } from "@/hooks/useSupabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export const Header = () => {
   const { searchTerm, setSearchTerm } = useMovies();
+  const { scrapeAndSearchMovies } = useMoviesDB();
   const { user, signOut } = useSupabase();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [localSearch, setLocalSearch] = useState(searchTerm);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (localSearch.trim()) {
-      setSearchTerm(localSearch.trim());
-      navigate('/search');
+    if (localSearch.trim() && !isSearching) {
+      setIsSearching(true);
+      toast({
+        title: "Searching...",
+        description: `Scraping results for "${localSearch.trim()}"`,
+      });
+      
+      try {
+        // Trigger live scraping
+        await scrapeAndSearchMovies(localSearch.trim());
+        setSearchTerm(localSearch.trim());
+        navigate('/search');
+        toast({
+          title: "Search Complete",
+          description: "Found fresh results from the web!",
+        });
+      } catch (error) {
+        console.error('Search error:', error);
+        toast({
+          title: "Search Error",
+          description: "Failed to scrape results. Showing cached data.",
+          variant: "destructive",
+        });
+        setSearchTerm(localSearch.trim());
+        navigate('/search');
+      } finally {
+        setIsSearching(false);
+      }
     }
   };
 

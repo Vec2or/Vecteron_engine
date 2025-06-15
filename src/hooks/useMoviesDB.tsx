@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { MovieScraperService, type ScrapedMovie } from '@/services/MovieScraperService';
 
 interface Movie {
   id: string;
@@ -22,7 +23,9 @@ interface MoviesDBContextType {
   tvShows: Movie[];
   loading: boolean;
   searchMovies: (query: string) => Promise<Movie[]>;
+  scrapeAndSearchMovies: (query: string, type?: 'movie' | 'tv') => Promise<ScrapedMovie[]>;
   getMovieById: (id: string) => Promise<Movie | null>;
+  getMovieWithSources: (id: string) => Promise<{ movie: Movie; sources: any[] } | null>;
   addToWatchlist: (movieId: string) => Promise<void>;
   removeFromWatchlist: (movieId: string) => Promise<void>;
   getWatchlist: () => Promise<Movie[]>;
@@ -186,13 +189,37 @@ export const MoviesDBProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const scrapeAndSearchMovies = async (query: string, type: 'movie' | 'tv' = 'movie'): Promise<ScrapedMovie[]> => {
+    try {
+      const results = await MovieScraperService.searchAndScrapeMovies(query, type);
+      // Refresh local data after scraping
+      await fetchMovies();
+      return results;
+    } catch (error) {
+      console.error('Error scraping movies:', error);
+      return [];
+    }
+  };
+
+  const getMovieWithSources = async (id: string): Promise<{ movie: Movie; sources: any[] } | null> => {
+    try {
+      const result = await MovieScraperService.getMovieWithSources(id);
+      return result;
+    } catch (error) {
+      console.error('Error getting movie with sources:', error);
+      return null;
+    }
+  };
+
   return (
     <MoviesDBContext.Provider value={{
       movies,
       tvShows,
       loading,
       searchMovies,
+      scrapeAndSearchMovies,
       getMovieById,
+      getMovieWithSources,
       addToWatchlist,
       removeFromWatchlist,
       getWatchlist,

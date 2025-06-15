@@ -3,9 +3,35 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MovieCard } from '@/components/MovieCard';
 import { useMovies } from '@/hooks/useMovies';
+import { useMoviesDB } from '@/hooks/useMoviesDB';
+import { useState, useEffect } from 'react';
 
 const SearchResults = () => {
-  const { searchTerm, searchResults } = useMovies();
+  const { searchTerm } = useMovies();
+  const { searchMovies } = useMoviesDB();
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (searchTerm) {
+      performSearch();
+    }
+  }, [searchTerm]);
+
+  const performSearch = async () => {
+    if (!searchTerm) return;
+    
+    setLoading(true);
+    try {
+      const searchResults = await searchMovies(searchTerm);
+      setResults(searchResults);
+    } catch (error) {
+      console.error('Error searching:', error);
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pt-16">
@@ -25,7 +51,12 @@ const SearchResults = () => {
           </div>
         </div>
 
-        {searchResults.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Searching...</p>
+          </div>
+        ) : results.length === 0 ? (
           <div className="text-center py-16">
             <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-foreground mb-2">
@@ -38,10 +69,10 @@ const SearchResults = () => {
         ) : (
           <>
             <p className="text-muted-foreground mb-6">
-              Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+              Found {results.length} result{results.length !== 1 ? 's' : ''}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {searchResults.map((movie) => (
+              {results.map((movie) => (
                 <div key={movie.id} className="w-full">
                   <MovieCard {...movie} />
                 </div>
