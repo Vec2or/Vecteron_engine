@@ -1,0 +1,42 @@
+import { Search, Bell, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export const Header = () => {
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">V</span>
+            </div>
+            <span className="text-xl font-bold text-foreground">Vecteron</span>
+          </div>
+          <nav className="hidden md:flex items-center space-x-6">
+            <a href="#" className="text-foreground hover:text-primary transition-colors">Home</a>
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Movies</a>
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">TV Shows</a>
+            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">My List</a>
+          </nav>
+        </div>
+        
+        <div className="flex items-center space-x-4">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input 
+              placeholder="Search movies, shows..." 
+              className="pl-10 w-64 bg-secondary/50 border-border"
+            />
+          </div>
+          <Button variant="ghost" size="icon">
+            <Bell className="w-5 h-5" />
+          </Button>
+          <Button variant="ghost" size="icon">
+            <User className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+};
