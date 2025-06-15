@@ -1,13 +1,14 @@
-import { Search, Bell, User } from "lucide-react";
+import { Search, Bell, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AuthModal } from "@/components/AuthModal";
 import { useMovies } from "@/hooks/useMovies";
-import { useNavigate } from "react-router-dom";
+import { useSupabase } from "@/hooks/useSupabase";
+import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 
 export const Header = () => {
   const { searchTerm, setSearchTerm } = useMovies();
+  const { user, signOut } = useSupabase();
   const navigate = useNavigate();
   const [localSearch, setLocalSearch] = useState(searchTerm);
 
@@ -23,17 +24,17 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 glass-nav">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center space-x-8">
-          <div className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">V</span>
             </div>
             <span className="text-xl font-bold text-foreground">Vecteron</span>
-          </div>
+          </Link>
           <nav className="hidden md:flex items-center space-x-6">
-            <a href="#" className="text-foreground hover:text-primary transition-colors">Home</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">Movies</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">TV Shows</a>
-            <a href="#" className="text-muted-foreground hover:text-primary transition-colors">My List</a>
+            <Link to="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+            <Link to="/movies" className="text-muted-foreground hover:text-primary transition-colors">Movies</Link>
+            <Link to="/tv-shows" className="text-muted-foreground hover:text-primary transition-colors">TV Shows</Link>
+            <Link to="/my-list" className="text-muted-foreground hover:text-primary transition-colors">My List</Link>
           </nav>
         </div>
         
@@ -47,14 +48,17 @@ export const Header = () => {
               onChange={(e) => setLocalSearch(e.target.value)}
             />
           </form>
-          <Button variant="ghost" size="icon">
-            <Bell className="w-5 h-5" />
-          </Button>
-          <AuthModal>
-            <Button variant="ghost" size="icon">
-              <User className="w-5 h-5" />
+          {user ? (
+            <Button variant="ghost" size="icon" onClick={signOut}>
+              <LogOut className="w-5 h-5" />
             </Button>
-          </AuthModal>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" size="icon">
+                <User className="w-5 h-5" />
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </header>
