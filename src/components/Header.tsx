@@ -7,6 +7,7 @@ import { useSupabase } from "@/hooks/useSupabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { PopulateMovies } from "@/components/PopulateMovies";
 
 export const Header = () => {
   const { searchTerm, setSearchTerm } = useMovies();
@@ -78,6 +79,7 @@ export const Header = () => {
               onChange={(e) => setLocalSearch(e.target.value)}
             />
           </form>
+          <PopulateMovies />
           {user ? (
             <Button variant="ghost" size="icon" onClick={signOut}>
               <LogOut className="w-5 h-5" />

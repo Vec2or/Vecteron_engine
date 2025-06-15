@@ -60,19 +60,31 @@ function getGenreNames(genreIds: number[]): string {
     .join(", ");
 }
 
-function generateStreamingSources(movieTitle: string, year: string): Array<{source_url: string, quality: string, provider: string}> {
-  // Mock streaming URLs - in real implementation, scrape from actual providers
+function generateStreamingSources(movieTitle: string, year: string, tmdbId: number): Array<{source_url: string, quality: string, provider: string}> {
+  // Generate working video URLs - using sample video files for demo
   const sources = [];
   const cleanTitle = movieTitle.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
   
-  STREAMING_PROVIDERS.forEach((provider, index) => {
-    const qualities = ["720p", "1080p", "480p"];
-    qualities.forEach(quality => {
-      sources.push({
-        source_url: `https://${provider}/embed/${cleanTitle}-${year}-${quality}`,
-        quality,
-        provider: provider.split('.')[0]
-      });
+  // Add some working video sources for demo (using Big Buck Bunny and other Creative Commons videos)
+  const sampleVideos = [
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+  ];
+  
+  // For demo purposes, cycle through sample videos
+  const videoIndex = tmdbId % sampleVideos.length;
+  const baseVideo = sampleVideos[videoIndex];
+  
+  // Generate multiple quality options with the same video
+  const qualities = ["1080p", "720p", "480p"];
+  qualities.forEach((quality, idx) => {
+    sources.push({
+      source_url: baseVideo,
+      quality,
+      provider: `server${idx + 1}`
     });
   });
   
@@ -121,10 +133,11 @@ serve(async (req) => {
       );
     }
 
-    // Use free TMDB API (no key required for basic search)
+    // Use TMDB API with proper key
+    const tmdbApiKey = '8265bd1679663a7ea12ac168da84d2e8'; // Public key for demo purposes
     const tmdbUrl = type === 'tv' 
-      ? `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(query)}`
-      : `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(query)}`;
+      ? `https://api.themoviedb.org/3/search/tv?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}`
+      : `https://api.themoviedb.org/3/search/movie?api_key=${tmdbApiKey}&query=${encodeURIComponent(query)}`;
 
     console.log('Fetching from TMDB:', tmdbUrl);
 
@@ -184,7 +197,7 @@ serve(async (req) => {
         movieId = newMovie.id;
 
         // Generate and insert streaming sources
-        const streamingSources = generateStreamingSources(title, year);
+        const streamingSources = generateStreamingSources(title, year, item.id);
         
         for (const source of streamingSources) {
           await supabase
