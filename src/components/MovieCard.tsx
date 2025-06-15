@@ -15,7 +15,7 @@ interface MovieCardProps {
 export const MovieCard = ({ id, title, year, rating, genre, poster }: MovieCardProps) => {
   return (
     <Link to={`/movie/${id}`}>
-      <Card className="group relative overflow-hidden bg-card border-border hover:scale-105 transition-all duration-300 cursor-pointer">
+      <Card className="group relative overflow-hidden glass-card hover:scale-105 transition-all duration-300 cursor-pointer border-0">
       <div className="aspect-[2/3] relative">
         <img 
           src={poster} 
