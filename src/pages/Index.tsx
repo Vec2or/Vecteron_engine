@@ -1,12 +1,14 @@
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { MovieRow } from "@/components/MovieRow";
+import { FloatingOrbs } from "@/components/FloatingOrbs";
 import { useMovies } from "@/hooks/useMovies";
 
 const Index = () => {
   const { movies } = useMovies();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <FloatingOrbs />
       <Header />
       <main className="pt-16">
         <HeroSection />
